@@ -1,0 +1,22 @@
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import './src/styles/global.css';
+
+const {pagetitle}=Astro.props;
+---
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="portfolio-website/public/fav.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{pagetitle}</title>
+	</head>
+	<body>
+		<Navbar/>
+		<h1 class="raleway-customfont">{pagetitle}</h1>
+        <slot/>
+		<Footer/>
+	</body>
+</html>

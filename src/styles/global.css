@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+@import "tailwindcss";
+
+
+*{
+    box-sizing: border-box;
+}
+
+body{
+    background-color:#FCECDD;
+    width: 100vw;
+    height: 100vh;
+}
+
+.raleway-customfont{
+    font-family: "Raleway", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 748;
+    font-style:italic;
+    font-size: larger;
+    color:#00809D;
+}
+
+.raleway-c{
+    font-family: "Raleway", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-style: regular;
+}
