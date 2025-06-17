@@ -1,15 +1,57 @@
 ---
 import Baselayout from "../Layouts/Baselayout.astro"
-const pagetitle= "Contact";
+const pagetitle = "Contact";
 ---
+
 <Baselayout pagetitle={pagetitle}>
-   <form action="https://formspree.io/f/your-form-id" method="POST" class="space-y-4">
+  <form id="contactForm" class="space-y-4">
     <label for="name">Name:</label>
-    <input type="text" name="name" placeholder="Jhon Doe" class="w-full p-2 border rounded" required />
+    <input type="text" id="name" name="name" placeholder="John Doe" class="w-full p-2 border rounded" required />
+
     <label for="email">Email:</label>
-    <input type="email" name="email" placeholder="yourname@email.com" class="w-full p-2 border rounded" required />
+    <input type="email" id="email" name="email" placeholder="yourname@email.com" class="w-full p-2 border rounded" required />
+
     <label for="message">Write your query here:</label>
-  <textarea name="message" placeholder="typing..." class="w-full p-2 border rounded" rows="5" required></textarea>
-  <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Send</button>
-</form> 
+    <textarea id="message" name="message" placeholder="typing..." class="w-full p-2 border rounded" rows="5" required></textarea>
+
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Send</button>
+
+    <p id="responseMsg" class="text-green-600 text-sm mt-2 hidden">Message sent!</p>
+  </form>
+
+  <script type="module">
+    const form = document.getElementById('contactForm');
+    const responseMsg = document.getElementById('responseMsg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = {
+        name: form.name.value,
+        email: form.email.value,
+        message: form.message.value,
+      };
+
+      try {
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+
+        if (res.ok) {
+          form.reset();
+          responseMsg.textContent = "Message sent!";
+          responseMsg.classList.remove("hidden");
+        } else {
+          responseMsg.textContent = "Failed to send message.";
+          responseMsg.classList.remove("hidden");
+        }
+      } catch (error) {
+        responseMsg.textContent = "Something went wrong.";
+        responseMsg.classList.remove("hidden");
+        console.error(error);
+      }
+    });
+  </script>
 </Baselayout>
