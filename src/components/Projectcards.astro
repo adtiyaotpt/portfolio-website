@@ -2,7 +2,7 @@
 const{title, description, link}= Astro.props;
 import '../styles/global.css';
 ---
-<div class="bg-[#00809D] flex flex-col m-3 px-5 py-2 w-xs items-center text-black shadow-2xl font-mono rounded-2xl border-[#F3A26D] border-2" >
+<div class="bg-[#00809D] flex flex-col m-3 px-5 py-2 w-xs items-center text-white shadow-2xl font-mono rounded-2xl border-[#F3A26D] border-2" >
     <h2 class=" border-2 rounded-xl p-0.5 bg-[#a09186]">{title}</h2>
     <section class="text-center bg-[#ffffff] my-1 rounded-2xl p-1">{description}</section>
     <a href={link} target="_blank" class="underline hover:text-black hover:text-lg">View Project</a>

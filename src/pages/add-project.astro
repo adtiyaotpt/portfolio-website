@@ -1,0 +1,47 @@
+---
+// src/pages/add-project.astro
+import Baselayout from "../Layouts/Baselayout.astro"
+const pagetitle = "Add Project";
+---
+
+<Baselayout pagetitle={pagetitle}>
+  <div class="grid place-items-center h-screen">
+  <div class="flex justify-center items-center m-3 border-2 py-2 w-1/4 rounded-xl bg-amber-50">
+  <form id="projectForm" class=" flex flex-col gap-3">
+    <label for="title" class="italic font-bold">Title</label>
+    <input name="title" id="title" placeholder="Project Title" class="p-2 border rounded" required />
+    <label for="description" class="italic font-bold">Description</label>
+    <textarea name="description" id="description" placeholder="Project Description" class="p-2 border rounded" rows="4" required></textarea>
+    <label for="link" class="italic font-bold">Link</label>
+    <input name="link" id="githubLink" placeholder="https://yourproject.link" class="p-2 border rounded" required />
+    <button type="submit" class="bg-blue-500 text-black px-4 py-2 rounded hover:bg-blue-700 hover:text-white">Submit</button>
+  </form>
+  </div>
+  </div>
+  <script type="module">
+    const form = document.getElementById("projectForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+const data = {
+  title: form.title.value.trim(),
+  description: form.description.value.trim(),
+  githubLink: form.link.value.trim()
+};
+
+      console.log(data)
+
+      const res = await fetch("/api/postForm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        alert("Project added!");
+        window.location.href = "/projects";
+      } else {
+        alert("Error submitting project");
+      }
+    });
+  </script>
+</Baselayout>
