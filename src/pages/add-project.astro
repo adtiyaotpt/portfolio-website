@@ -22,6 +22,26 @@ const pagetitle = "Add Project";
     const form = document.getElementById("projectForm");
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      function showToast(message, type = "success") {
+  const toast = document.createElement("div");
+
+  const baseStyles = "px-4 py-2 rounded shadow-md text-white animate-fade-in";
+  const typeStyles =
+    type === "success"
+      ? "bg-green-600"
+      : type === "error"
+      ? "bg-red-600"
+      : "bg-gray-700";
+
+  toast.className = `${baseStyles} ${typeStyles}`;
+  toast.innerText = message;
+
+  const container = document.getElementById("toast-container");
+  if (container) container.appendChild(toast);
+
+  setTimeout(() => toast.remove(), 3000);
+}
+
 const data = {
   title: form.title.value.trim(),
   description: form.description.value.trim(),
@@ -37,10 +57,10 @@ const data = {
       });
 
       if (res.ok) {
-        alert("Project added!");
+        showToast("Project added!");
         window.location.href = "/projects";
       } else {
-        alert("Error submitting project");
+        showToast('Something went wrong!', 'error');
       }
     });
   </script>

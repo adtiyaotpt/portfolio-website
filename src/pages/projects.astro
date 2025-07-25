@@ -1,50 +1,270 @@
 ---
 import Baselayout from "../Layouts/Baselayout.astro";
+import Projectcards from "../components/Projectcards.astro";
+
+const url = new URL(Astro.request.url);
+const page = Number(url.searchParams.get("page")) || 1;
+const limit = 6;
+const res = await fetch(
+  `http://localhost:4321/api/getForm?page=${page}&limit=${limit}`
+);
+const json = await res.json();
+const projects = json.data || [];
+const total = json.total || 0;
+
+const totalPages = Math.ceil(total / limit);
 ---
 
 <Baselayout>
   <div class="overflow-hidden m-3">
-    <a href="/add-project" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-      ➕ Add Project
-    </a>
+    <div class="flex gap-2 m-3">
+      <button id="open-add-project" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+  Add Project
+</button>
+    </div>
   </div>
 
-  <!-- Container to inject project cards -->
-  <div id="project-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 ml-1"></div>
+  <div
+    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 justify-items-center gap-3"
+    id="project-list"
+  >
+    {
+      projects.map(
+        (project: {
+          _id: string;
+          title: string;
+          description: string;
+          fullDescription: string;
+          githubLink: string;
+        }) => (
+          <Projectcards
+            id={project._id}
+            title={project.title}
+            description={project.description.length > 100 ? project.description.slice(0, 60) + "..." : project.description}
+            fullDescription={project.description}
+            link={project.githubLink}
+            showEdit={true}
+          />
+        )
+      )
+    }
+  </div>
+
+  <!-- Add Project Modal -->
+<div id="add-project-modal" class="fixed inset-0 hidden bg-black bg-opacity-50 z-50 flex items-center justify-center">
+  <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg relative">
+    <button id="close-add-project" class="absolute top-2 right-2 text-red-600 text-2xl font-bold hover:text-red-800">
+      &times;
+    </button>
+    <h2 class="text-xl font-bold mb-4">Add New Project</h2>
+    <form id="add-project-form" class="flex flex-col gap-4">
+      <input name="title" type="text" placeholder="Project Title" required class="border p-2 rounded" />
+      <textarea name="description" placeholder="Project Description" required class="border p-2 rounded"></textarea>
+      <input name="githubLink" type="url" placeholder="GitHub Link" required class="border p-2 rounded" />
+      <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+        Submit
+      </button>
+    </form>
+  </div>
+</div>
+
+
+  <!-- Modal -->
+  <div id="project-modal" class="fixed inset-0 bg-black/50 hidden bg-opacity-10 flex items-center justify-center z-50">
+    <div class="bg-slate-200/90 border-[#bbbab9] border-1 text-black p-6 rounded-lg shadow-xl w-11/12 max-w-md relative">
+      <button id="close-modal" class="absolute top-1 right-2 text-xl font-bold text-red-500 hover:text-red-700">&times;</button>
+      <h2 id="modal-title" class="text-xl font-bold mb-4"></h2>
+      <p id="modal-description" class="mb-4 text-gray-700"></p>
+      <a id="modal-link" href="#" target="_blank" class="text-blue-600 underline hover:text-blue-800">View Project</a>
+    </div>
+  </div>
+
+  <div class="flex justify-center mt-6 space-x-4 text-black">
+    {
+      page > 1 && (
+        <a
+          href={`/projects?page=${page - 1}`}
+          class="bg-blue-200 px-4 py-2 rounded-3xl hover:bg-blue-300"
+        >
+          &lt;&lt; Prev
+        </a>
+      )
+    }
+
+    {
+      page < totalPages && (
+        <a
+          href={`/projects?page=${page + 1}`}
+          class="bg-blue-200 px-4 py-2 rounded-3xl hover:bg-blue-300"
+        >
+          <span>Next &gt;&gt;</span>
+        </a>
+      )
+    }
+  </div>
+
+   <!-- Edit Project Modal -->
+<div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white text-black p-6 rounded-lg shadow-xl w-11/12 max-w-md relative">
+    <button id="close-edit-modal" class="absolute top-2 right-2 text-xl font-bold text-red-500 hover:text-red-700">&times;</button>
+    <h2 class="text-xl font-bold mb-4">Edit Project</h2>
+    <form id="edit-project-form" class="flex flex-col gap-4">
+      <input type="hidden" name="id" id="edit-id" />
+      <input type="text" id="edit-title" name="title" placeholder="Title" class="border p-2 rounded" required />
+      <textarea id="edit-description" name="description" placeholder="Description" class="border p-2 rounded" required></textarea>
+      <input type="url" id="edit-link" name="link" placeholder="GitHub Link" class="border p-2 rounded" required />
+      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Update Project</button>
+    </form>
+  </div>
+</div>
+
 
   <script type="module">
-  async function fetchAndRenderProjects() {
-    try {
-      const res = await fetch("/api/getForm");
-      if (!res.ok) throw new Error("Failed to fetch project data");
 
-      const json = await res.json();       
-      const projects = json.data;          
+    function showToast(message, type = "success") {
+      const toast = document.createElement("div");
 
-      const container = document.getElementById("project-container");
+      const baseStyles =
+        "px-4 py-2 rounded shadow-md text-white animate-fade-in";
+      const typeStyles =
+        type === "success"
+          ? "bg-green-600"
+          : type === "error"
+            ? "bg-red-600"
+            : "bg-gray-700";
 
-      projects.forEach(project => {
-        const card = document.createElement("div");
-        card.className = "border p-4 rounded bg-amber-50 shadow";
+      toast.className = `${baseStyles} ${typeStyles}`;
+      toast.innerText = message;
 
-        card.innerHTML = `
-          <h2 class="text-xl font-bold mb-2">${project.title}</h2>
-          <p class="text-gray-700 mb-2">${project.description}</p>
-          <a href="${project.githubLink}" class="text-blue-500 hover:underline" target="_blank">
-            Visit Project
-          </a>
-        `;
-        console.log(project.githubLink);
+      document.getElementById("toast-container").appendChild(toast);
 
-        container.appendChild(card);
-      });
-    } catch (error) {
-      console.error("Error loading projects:", error);
-      const container = document.getElementById("project-container");
-      container.innerHTML = "<p class='text-red-500'>Error loading projects.</p>";
+      // Auto remove after 3s
+      setTimeout(() => {
+        toast.remove();
+      }, 1700);
     }
-  }
 
-  fetchAndRenderProjects();
-</script>
+  // Add modal listeners
+document.querySelectorAll('.open-modal').forEach(card => {
+  card.addEventListener('click', () => {
+    const title = card.getAttribute('data-title');
+    const description = card.getAttribute('data-description');
+    const link = card.getAttribute('data-link');
+
+    openModal(title, description, link);
+  });
+});
+
+function openModal(title, description, link) {
+  const modal = document.getElementById("project-modal");
+  document.getElementById("modal-title").innerText = title;
+  document.getElementById("modal-description").innerText = description;
+  document.getElementById("modal-link").href = link;
+  modal.classList.remove("hidden");
+}
+
+document.getElementById("close-modal").addEventListener("click", () => {
+  document.getElementById("project-modal").classList.add("hidden");
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    document.getElementById("project-modal").classList.add("hidden");
+  }
+});
+
+document.getElementById('open-add-project').addEventListener('click', () => {
+    document.getElementById('add-project-modal').classList.remove('hidden');
+  });
+
+  document.getElementById('close-add-project').addEventListener('click', () => {
+    document.getElementById('add-project-modal').classList.add('hidden');
+  });
+
+  // Optional: ESC key to close modal
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      document.getElementById("add-project-modal").classList.add("hidden");
+    }
+  });
+
+  // Submit handler
+  document.getElementById("add-project-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = {
+      title: form.title.value,
+      description: form.description.value,
+      githubLink: form.githubLink.value
+    };
+
+    const response = await fetch("/api/postForm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData)
+    });
+
+    if (response.ok) {
+      showToast("Project added successfully!");
+      form.reset();
+      document.getElementById("add-project-modal").classList.add("hidden");
+      location.reload(); // Reload to fetch new project list
+    } else {
+      showToast("Failed to add project", "error");
+    }
+  });
+
+ // Open edit modal with prefilled data
+document.querySelectorAll(".open-edit-modal").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.getElementById("edit-id").value = btn.dataset.id;
+    document.getElementById("edit-title").value = btn.dataset.title;
+    document.getElementById("edit-description").value = btn.dataset.description;
+    document.getElementById("edit-link").value = btn.dataset.link;
+    document.getElementById("edit-modal").classList.remove("hidden");
+  });
+});
+
+// Close modal
+document.getElementById("close-edit-modal").addEventListener("click", () => {
+  document.getElementById("edit-modal").classList.add("hidden");
+});
+
+// Submit form
+document.getElementById("edit-project-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const id = document.getElementById("edit-id").value;
+  const title = document.getElementById("edit-title").value;
+  const description = document.getElementById("edit-description").value;
+  const githubLink = document.getElementById("edit-link").value;
+
+  const res = await fetch("/api/edit-Project", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id, title, description, githubLink }),
+  });
+
+  const result = await res.json();
+
+  if (res.ok) {
+    showToast("Project updated successfully");
+    location.reload();
+  } else {
+    showToast(result.message || "Failed to update", "error");
+  }
+});
+app.put('/api/edit-Project', async (req, res) => {
+  const { id, title, description, githubLink } = req.body;
+
+  await Project.updateOne({ _id: id }, { title, description, githubLink });
+
+  res.json({ message: "Updated successfully" });
+});
+
+
+  </script>
 </Baselayout>

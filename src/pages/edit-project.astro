@@ -1,0 +1,64 @@
+---
+import Baselayout from "../Layouts/Baselayout.astro";
+
+const url = new URL(Astro.request.url);
+const id = url.searchParams.get("id");
+const res = await fetch(`http://localhost:4321/api/getForm`);
+const { data } = await res.json();
+const project = data.find((project: { _id: string }) => project._id === id);
+---
+
+<Baselayout pagetitle="Edit Project">
+  <form id="updateForm" method="POST" class="space-y-4 px-4">
+    <input type="hidden" name="id" value={project._id} />
+
+    <label>Title:</label>
+    <input type="text" name="title" value={project.title} required class="w-full border p-2 rounded" />
+
+    <label>Description:</label>
+    <textarea name="description" rows="4" class="w-full border p-2 rounded" required>{project.description}</textarea>
+
+    <label>GitHub Link:</label>
+    <input type="url" name="githubLink" value={project.githubLink} required class="w-full border p-2 rounded" />
+    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-800">Save Changes</button>
+    <p id="responseMsg" class="text-green-600 text-sm mt-2 hidden">changes made successfully!</p>
+  </form>
+
+  <script type="module">
+    const form = document.getElementById('updateForm');
+    const responseMsg = document.getElementById('responseMsg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = {
+        id: form.id.value,
+        title: form.title.value,
+        description: form.description.value,
+        githubLink: form.githubLink.value,
+      };
+      
+      try {
+        const res = await fetch('/api/updateForm', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+
+        if (res.ok) {
+          form.reset();
+          responseMsg.textContent = "changes made successfully!";
+          responseMsg.classList.remove("hidden");
+           window.location.href = "/projects"; 
+        } else {
+          responseMsg.textContent = "Failed to make changes.";
+          responseMsg.classList.remove("hidden");
+        }
+      } catch (error) {
+        responseMsg.textContent = "Something went wrong.";
+        responseMsg.classList.remove("hidden");
+        console.error(error);
+      }
+    });
+  </script>
+</Baselayout>

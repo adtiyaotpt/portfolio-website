@@ -1,9 +1,69 @@
 ---
-const{title, description, link}= Astro.props;
-import '../styles/global.css';
+const {
+  title,
+  description,
+  fullDescription,
+  link,
+  id,
+  showCheckbox = false,
+  showEdit = false,
+} = Astro.props;
+import "../styles/global.css";
 ---
-<div class="bg-[#00809D] flex flex-col m-3 px-5 py-2 w-xs items-center text-white shadow-2xl font-mono rounded-2xl border-[#F3A26D] border-2" >
-    <h2 class=" border-2 rounded-xl p-0.5 bg-[#a09186]">{title}</h2>
-    <section class="text-center bg-[#ffffff] my-1 rounded-2xl p-1">{description}</section>
-    <a href={link} target="_blank" class="underline hover:text-black hover:text-lg">View Project</a>
+
+<div
+  class="open-modal cursor-pointer bg-[#ffffff] flex flex-col p-2 h-45 justify-around w-xs items-center text-white shadow-lg shadow-slate-200 font-mono rounded-2xl border-[#bbbab9] border-1 relative" 
+   data-title={title}
+  data-description={fullDescription}
+  data-link={link}
+>
+  {
+    showCheckbox && (
+      <input
+        type="checkbox"
+        class="absolute top-2 left-2 project-checkbox"
+        value={id}
+      />
+    )
+  }
+  <h2 class="border-2 rounded-xl p-0.5 bg-[#78b6ed] font-bold">{title}</h2>
+  <section
+    class="text-center text-sm p-1 bg-[#78b6ed] rounded-2xl w-2xs text-white italic"
+  >
+    "{description}"
+    {description !== fullDescription && (
+      <span class="text-blue-600 underline ml-1">View More</span>
+    )}
+  </section>
+  
+  <div class="flex w-2xs justify-around ">
+  <a
+    href={link}
+    target="_blank"
+     onclick="event.stopPropagation()"
+    class="underline text-black p-2 hover:bg-blue-300 hover:rounded-xl hover:text-white"
+    >View Project</a
+  >
+  <button
+        id="toggle-delete-mode"
+        onclick="event.stopPropagation()"
+        class=" text-red-200  hover:text-red-700"
+        >Delete Project</button
+      >
+  {
+    showEdit && (
+      <button
+  type="button"
+  class="text-blue-300 hover:text-blue-500 open-edit-modal"
+  data-id={id}
+  data-title={title}
+  data-description={fullDescription}
+  data-link={link}
+>
+  make changes
+</button>
+
+    )
+  }
+  </div>
 </div>

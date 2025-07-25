@@ -9,14 +9,18 @@ const {pagetitle}=Astro.props;
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href="portfolio-website/public/fav.svg" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<!-- <img class="w-16 md:w-32 lg:w-48" src="..." /> -->
 		<meta name="generator" content={Astro.generator} />
 		<title>{pagetitle}</title>
 	</head>
 	<body>
 		<Navbar/>
-		<h1 class="raleway-customfont text-center mt-2">{pagetitle}</h1>
-        <slot/>
+		<!-- <h1 class="raleway-customfont text-center mt-2">{pagetitle}</h1> -->
+        <main>
+			<slot/>
+		</main>
+		<!-- <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>	 -->
 		<Footer/>
 	</body>
 </html>
